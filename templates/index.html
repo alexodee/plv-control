@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLVControl</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            text-align: center;
+            padding: 5px;
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header img {
+            width: 80px;
+            height: 80px;
+            opacity: 100%;
+        }
+
+        header h1 {
+            display: inline-block;
+            font-weight: bold;
+            font-size: 24px;
+            vertical-align: middle;
+        }
+
+        .container {
+            margin-top: 80px;
+            padding: 20px;
+        }
+
+        .widget {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .widget button {
+            margin-right: 10px;
+            padding: 10px 15px;
+            font-weight: bold;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .widget button:hover {
+            background-color: #2980b9;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+            width: calc(100% - 20px);
+            transition: border-color 0.3s ease;
+        }
+
+        select:hover {
+            border-color: #3498db;
+        }
+
+        .upload-form,
+        .save-order-form,
+        .export-form {
+            margin-bottom: 20px;
+        }
+
+        .save-order-form,
+        .export-form {
+            display: inline-block;
+        }
+
+        .save-order-form input[type="submit"],
+        .export-form input[type="submit"] {
+            padding: 10px 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-right: 10px; /* Espacement entre les boutons (ajustez selon vos préférences) */
+        }
+
+        .delete-form input[type="submit"] {
+            padding: 10px 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .upload-form input[type="file"] {
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            position: absolute;
+            z-index: -1;
+        }
+
+        .upload-form label {
+            display: inline-block;
+            padding: 10px 20px;
+            font-weight: bold;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .upload-form label:hover {
+            background-color: #2980b9;
+        }
+
+        .upload-form input[type="submit"]:hover,
+        .save-order-form input[type="submit"]:hover,
+        .export-form input[type="submit"]:hover,
+        .upload-form label:hover {
+            background-color: #45a049;
+        }
+
+        .video-list {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .video-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #ffffff;
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            cursor: grab; /* Curseur de type "grab" pour indiquer la possibilité de glisser */
+        }
+
+        .video-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .video-item img {
+            width: 120px;
+            height: 70px;
+            margin-right: 15px;
+            border-radius: 5px;
+        }
+
+        .video-item p {
+            margin: 0;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            transform: translateX(100%);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .drag-handle {
+            position: fixed;
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #ccc;
+            opacity: 0; /* Opacité initiale à 0 */
+            transition: opacity 0.3s ease; /* Animation de transition pour l'effet de fondu */
+        }
+
+        .video-item:hover .drag-handle {
+            opacity: 1; /* Afficher l'icône au survol */
+            transition: opacity 0.3s ease; /* Animation de transition pour l'effet de fondu */
+        }
+
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.13.0/Sortable.min.js"></script>
+</head>
+<body>
+    <header>
+        <img src="/static/logo.png" alt="Logo">
+    </header>
+
+    <div class="container">
+
+        <div class="widget">
+            <label for="deviceSelect">Sélectionner un appareil :</label>
+            <select id="deviceSelect" name="deviceSelect">
+                {% for device in devices %}
+                    <option value="{{ device.name }}" {% if current_device == device.name %}selected{% endif %}>{{ device.name }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- <button id="button1">Redémarrer</button>
+            <button id="button2">Mettre à jour</button>
+            <button id="button3">Vérifier l'état</button> -->
+            
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="upload-form">
+            <label for="video">Ajouter une vidéo</label>
+            <input type="file" name="video" id="video" accept=".mp4" />
+            <input type="submit" value="Télécharger" />
+        </form>
+
+        <div id="video-list" class="video-list">
+            {% for video in videos %}
+            <div class="video-item">
+                <img src="{{ url_for('static', filename='thumbnails/' + video.name + '.png') }}" />
+                <div class="drag-handle">&#9776;</div> <!-- Ajoutez ici votre icône de hamburger -->
+                <p class="video-name">{{ video.name }}</p>
+                <form method="POST" action="/delete_video/{{ loop.index0 }}" class="delete-form">
+                    <input type="submit" value="Supprimer" />
+                </form>
+            </div>
+        {% endfor %}        
+        </div>
+        
+        
+        {% if videos %}
+            <form method="POST" action="/save_order" class="save-order-form">
+                <input type="submit" value="Enregistrer l'ordre" />
+            </form>
+        {% endif %}
+
+        {% if videos %}
+            <form method="POST" action="/export" class="export-form">
+                <input type="submit" value="Exporter et envoyer" />
+            </form>
+        {% endif %}
+            
+        <script>
+            const videoList = document.getElementById('video-list');
+            let startIndex = -1;
+//Liste triable---------------
+            const sortable = new Sortable(videoList, {
+                handle: '.video-item',
+                onEnd: function (evt) {
+                    const videoItems = Array.from(videoList.getElementsByClassName('video-item'));
+                    const newIndex = videoItems.findIndex(item => item === evt.item);
+        
+                    if (startIndex !== -1 && newIndex !== -1 && newIndex !== startIndex) {
+                        const videoIndex = startIndex < newIndex ? startIndex : startIndex - 1;
+                        const formData = new FormData();
+                        formData.append('startIndex', videoIndex);
+                        formData.append('endIndex', newIndex);
+        
+                        fetch('/reorder_videos', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            const movedVideo = videoItems.splice(startIndex, 1)[0];
+                            videoItems.splice(newIndex, 0, movedVideo);
+        
+                            videoList.innerHTML = '';
+                            videoItems.forEach(item => videoList.appendChild(item));
+        
+                            startIndex = -1;
+        
+                            saveOrder();
+                            showNotification('Ordre enregistré avec succès');
+                        })
+                        .catch(error => console.error(error));
+                    }
+        
+                    startIndex = -1;
+                }
+            });
+        
+            window.addEventListener('DOMContentLoaded', (event) => {
+                const deviceSelect = document.getElementById('deviceSelect');
+                const currentDevice = '{{ current_device }}';
+                deviceSelect.value = currentDevice;
+            });
+//Device select---------------
+            document.getElementById('deviceSelect').addEventListener('change', function () {
+                const selectedDevice = this.value;
+                fetch('/change_device', {
+                    method: 'POST',
+                    body: new URLSearchParams({ selectedDevice }),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Changement d\'appareil réussi');
+                            refreshPage();
+                        } else {
+                            console.error('Échec du changement d\'appareil :', data.error);
+                        }
+                    })
+                    .catch(error => console.error('Erreur lors du changement d\'appareil :', error));
+            });
+        
+            function refreshPage() {
+                fetch('/?refresh=true')
+                    .then(response => response.text())
+                    .then(html => {
+                        const newDoc = new DOMParser().parseFromString(html, 'text/html');
+                        const newVideoList = newDoc.getElementById('video-list');
+                        videoList.innerHTML = newVideoList.innerHTML;
+                        sortable.destroy();
+                        new Sortable(videoList, {
+                            handle: '.video-item',
+                            onEnd: sortable.options.onEnd
+                        });
+                    })
+                    .catch(error => console.error(error));
+            }
+            
+//Save Order---------------
+            function saveOrder() {
+                const videoOrder = Array.from(videoList.getElementsByClassName('video-item')).map(item => {
+                    const videoName = item.querySelector('p').innerText;
+                    return videoName;
+                });
+        
+                const formData = new FormData();
+                formData.append('videoOrder', JSON.stringify(videoOrder));
+        
+                fetch('/save_order', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Ordre enregistré avec succès');
+                            showNotification('Ordre enregistré avec succès.');
+                        } else {
+                            console.error('Échec de l\'enregistrement de l\'ordre :', data.error);
+                        }
+                    })
+                    .catch(error => console.error('Erreur lors de l\'enregistrement de l\'ordre :', error));
+            }
+        
+            document.querySelector('.save-order-form').addEventListener('submit', function (event) {
+                event.preventDefault();
+                saveOrder();
+
+            });
+        
+//Config notif---------------
+            function showNotification(message) {
+                const notification = document.createElement('div');
+                notification.className = 'notification';
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                // Animation d'apparition
+                setTimeout(() => {
+                    notification.classList.add('show');
+                }, 50);
+
+                // Animation de disparition
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }, 3000); // Disparaît après 3 secondes
+            }
+
+//Auto Upload---------------
+                document.addEventListener('DOMContentLoaded', function () {
+                const videoInput = document.getElementById('video');
+                const uploadForm = document.querySelector('.upload-form');
+
+                videoInput.addEventListener('change', function () {
+                    uploadForm.submit();
+                });
+            });
+        </script>
+        
+    </div>
+</body>
+</html>

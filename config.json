@@ -1,0 +1,21 @@
+{
+    "devices": [
+      {
+        "name": "Arrière caisse",
+        "ip": "192.168.1.170",
+        "username": "mjc-ac",
+        "password": "Majance78320",
+        "video_order": "video_order1.json",
+        "remote_path": "/home/mjc-ac/Desktop/output.mp4"
+      },
+      {
+        "name": "Autre",
+        "ip": "192.168.1.159",
+        "username": "mjc-2",
+        "password": "Majance78320",
+        "video_order": "video_order2.json",
+        "remote_path": "/home/mjc-2/Desktop/output.mp4"
+      }
+    ]
+  }
+  
